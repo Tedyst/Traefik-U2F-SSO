@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
     "io"
     "io/ioutil"
     "os"
@@ -17,10 +18,12 @@ func main() {
     out.Write([]byte("package main \n\nconst (\n"))
     for _, f := range fs {
         if strings.HasSuffix(f.Name(), ".html") {
-            out.Write([]byte(strings.TrimSuffix(f.Name(), ".html") + "HTML = `"))
+            name := strings.TrimSuffix(f.Name(), ".html")
+            out.Write([]byte(name + "HTML = `"))
             f, _ := os.Open("static/" + f.Name())
             io.Copy(out, f)
             out.Write([]byte("`\n"))
+            log.Print("Embedded " + f.Name() + " in the go binary as " + name + "HTML")
         }
     }
     out.Write([]byte(")\n"))

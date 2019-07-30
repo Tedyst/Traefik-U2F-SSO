@@ -18,6 +18,24 @@
             "group": {
                 "kind": "test",
                 "isDefault": true
+            },
+            "dependsOn": [
+                "generate"
+            ]
+        },
+        {
+            "label": "generate",
+            "type": "shell",
+            "command": "go generate",
+            "presentation": {
+                "echo": false,
+                "reveal": "silent",
+                "clear": true
+            },
+            "options": {
+                "env": {
+                    "GOPATH": "${workspaceFolder}"
+                }
             }
         }
     ]
