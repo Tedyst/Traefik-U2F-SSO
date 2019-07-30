@@ -61,7 +61,7 @@ func registrationStart (w http.ResponseWriter, r *http.Request) {
 		storage.users[name] = u
 	}
 
-	sess, err := store.Get(r, "cookie-name")
+	sess, err := store.Get(r, "session")
 	
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -80,7 +80,7 @@ func registrationFinish (w http.ResponseWriter, r *http.Request) {
     	w.Write([]byte("500 - Something bad happened!"))
 	}
 
-	sess, err := store.Get(r, "cookie-name")
+	sess, err := store.Get(r, "session")
 	if err != nil{
 		sess.Save(r,w)
 	}
