@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+//go:generate go run script/embedfiles.go
+
 var webauth, _ = webauthn.New(&webauthn.Config{
     RelyingPartyName:   "webauthn-demo",
 	AuthenticatorStore: storage,
