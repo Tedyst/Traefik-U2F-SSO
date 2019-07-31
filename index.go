@@ -7,7 +7,7 @@ import (
 
 //Index is the main page
 func Index(w http.ResponseWriter, r *http.Request) {
-	sess, err := store.Get(r, "session")
+	sess, err := sessionsstore.Get(r, "session")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
