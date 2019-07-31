@@ -9,11 +9,6 @@
                 "echo": false,
                 "reveal": "silent",
                 "clear": true
-            },
-            "options": {
-                "env": {
-                    "GOPATH": "${workspaceFolder}"
-                }
             }
         },
         {
