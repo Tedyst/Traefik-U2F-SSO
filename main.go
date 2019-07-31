@@ -136,8 +136,6 @@ func loginFinish(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	print(payload)
-	print(w.Header()["Set-Cookie"])
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(payload)
 }
