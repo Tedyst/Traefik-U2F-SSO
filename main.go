@@ -129,7 +129,7 @@ func loginFinish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	print(u.Name + " logged in!")
+	log.Print(u.Name + " logged in!")
 	payload, _ := json.Marshal(u)
 	sess.Values["logged"] = true
 	err = sess.Save(r, w)
