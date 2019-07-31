@@ -20,7 +20,8 @@
                 "isDefault": true
             },
             "dependsOn": [
-                "generate"
+                "generate",
+                "kill"
             ]
         },
         {
@@ -37,6 +38,14 @@
                     "GOPATH": "${workspaceFolder}"
                 }
             }
-        }
+        },
+        {
+            "label": "postdebugKill",
+            "type": "process",
+            "command": [
+                "${command:workbench.action.tasks.terminate}",
+                "${command:workbench.action.acceptSelectedQuickOpenItem}",
+            ],
+        },
     ]
 }
