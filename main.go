@@ -26,6 +26,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.Close()
 	initStorage()
 	log.Print("Started on :8080")
 	mux := http.NewServeMux()
