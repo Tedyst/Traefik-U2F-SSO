@@ -1,10 +1,13 @@
 package main
 
 import (
+	"log"
 	"encoding/hex"
 	"fmt"
 
 	"github.com/koesie10/webauthn/webauthn"
+	_ "github.com/mattn/go-sqlite3"
+	"database/sql"
 )
 
 //User is the user type
@@ -111,4 +114,30 @@ func (a *Authenticator) WebAuthAAGUID() []byte {
 
 func (a *Authenticator) WebAuthSignCount() uint32 {
 	return a.SignCount
+}
+
+func initStorage(){
+	db, err := sql.Open("sqlite3", "database")
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Name           string                    `json:"name"`
+	// Authenticators map[string]*Authenticator `json:"-"`
+	sqlStmt := `
+	CREATE TABLE IF NOT EXISTS users (id integer not null primary key, name text);
+	CREATE TABLE IF NOT EXISTS authenticators (
+		User text,
+		AuthID BLOB,
+		CredidentialID BLOB,
+		PublicKey BLOB,
+		AAGUID BLOB,
+		SignCount int,
+	);
+	`
+	_, err = db.Exec(sqlStmt)
+	if err != nil {
+		log.Printf("%q: %s\n", err, sqlStmt)
+		return
+	}
+
 }

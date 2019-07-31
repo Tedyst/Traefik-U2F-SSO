@@ -16,7 +16,7 @@ var webauth, _ = webauthn.New(&webauthn.Config{
 })
 
 func main() {
-	
+	initStorage()
 	log.Print("Started on :8080")
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", Index)
