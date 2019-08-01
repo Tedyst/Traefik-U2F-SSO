@@ -37,7 +37,7 @@ func main() {
 
 	// Prepare database
 	var err error
-	db, err = sql.Open("sqlite3", "database?journal_mode=WAL")
+	db, err = sql.Open("sqlite3", "storage/database?journal_mode=WAL")
 	if err != nil {
 		log.Fatal(err)
 	}
