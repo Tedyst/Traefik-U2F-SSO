@@ -17,18 +17,6 @@
 
         <div class="card mt-3">
             <div class="card-body">
-                <p class="hide lead" id="registerLoading">Registering... Please tap your authenticator.</p>
-
-                <form method="post" id="registerForm">
-                    <input type="text" name="token" id="token" class="form-control" placeholder="Token" />
-                    <input type="text" name="name" id="registerName" class="form-control" placeholder="Username" />
-                    <button type="submit" class="btn btn-success mt-3">Register</button>
-                </form>
-            </div>
-        </div>
-
-        <div class="card mt-3">
-            <div class="card-body">
                 <p class="hide lead" id="loginLoading">Logging in... Please tap your authenticator.</p>
 
                 <form method="post" id="loginForm">
@@ -60,44 +48,6 @@
                     }
                     throw new Error(res.statusText);
                 };
-            }
-
-            register(name, token) {
-                return fetch('/webauthn/registration/start?name=' + name + "&token=" + token, {
-                    method: 'POST'
-                })
-                    .then(WebAuthn._checkStatus(200))
-                    .then(res => res.json())
-                    .then(res => {
-                        res.publicKey.challenge = WebAuthn._decodeBuffer(res.publicKey.challenge);
-                        res.publicKey.user.id = WebAuthn._decodeBuffer(res.publicKey.user.id);
-                        if (res.publicKey.excludeCredentials) {
-                            for (var i = 0; i < res.publicKey.excludeCredentials.length; i++) {
-                                res.publicKey.excludeCredentials[i].id = WebAuthn._decodeBuffer(res.publicKey.excludeCredentials[i].id);
-                            }
-                        }
-                        return res;
-                    })
-                    .then(res => navigator.credentials.create(res))
-                    .then(credential => {
-                        return fetch('/webauthn/registration/finish?name=' + name, {
-                            method: 'POST',
-                            headers: {
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                id: credential.id,
-                                rawId: WebAuthn._encodeBuffer(credential.rawId),
-                                response: {
-                                    attestationObject: WebAuthn._encodeBuffer(credential.response.attestationObject),
-                                    clientDataJSON: WebAuthn._encodeBuffer(credential.response.clientDataJSON)
-                                },
-                                type: credential.type
-                            }),
-                        })
-                    })
-                    .then(WebAuthn._checkStatus(201));
             }
 
             login(name) {
@@ -145,28 +95,6 @@
 
         let w = new WebAuthn();
 
-        document.getElementById("registerForm").onsubmit = function (e) {
-            e.preventDefault();
-
-            if (registerPending) return;
-            registerPending = true;
-
-            document.getElementById("registerLoading").classList.remove("hide");
-
-            const name = document.getElementById("registerName").value;
-            const token = document.getElementById("token").value;
-            w.register(name, token)
-                .then(res => alert('This authenticator has been registered'))
-                .catch(err => {
-                    console.error(err)
-                    alert(err);
-                })
-                .then(() => {
-                    registerPending = false;
-                    document.getElementById("registerLoading").classList.add("hide");
-                });
-        };
-
         document.getElementById("loginForm").onsubmit = function (e) {
             e.preventDefault();
 
@@ -181,7 +109,7 @@
                 .then(res => alert('You have been logged in to ' + res.name))
                 .catch(err => {
                     console.error(err)
-                    alert('Wrong key or wrong username.');
+                    alert('Failed to login: ' + err);
                 })
                 .then(() => {
                     loginPending = false;

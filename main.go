@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/koesie10/webauthn/webauthn"
@@ -13,13 +14,19 @@ import (
 
 //go:generate go run script/embedfiles.go
 
-var webauth, _ = webauthn.New(&webauthn.Config{
-	RelyingPartyName:   "webauthn-demo",
-	AuthenticatorStore: storage,
-	Debug:              true,
-})
+var (
+	// Config is imported from config.yml
+	Config     Configuration
+	webauth, _ = webauthn.New(&webauthn.Config{
+		RelyingPartyName:   "webauthn-demo",
+		AuthenticatorStore: storage,
+		Debug:              true,
+	})
+)
 
 func main() {
+	initConfig()
+
 	// Prepare database
 	var err error
 	db, err = sql.Open("sqlite3", "database?journal_mode=WAL")
@@ -28,16 +35,16 @@ func main() {
 	}
 	defer db.Close()
 	initStorage()
-	log.Print("Started on :8080")
+	log.Print("Started on :" + strconv.Itoa(Config.Port))
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", Index)
 	mux.HandleFunc("/webauthn/registration/start", registrationStart)
 	mux.HandleFunc("/webauthn/registration/finish", registrationFinish)
 	mux.HandleFunc("/webauthn/login/start", loginStart)
 	mux.HandleFunc("/webauthn/login/finish", loginFinish)
-	mux.HandleFunc("/verify", loggedIn)
+	mux.HandleFunc("/verify", verify)
 
-	erra := http.ListenAndServe(":8080", RequestLogger(mux))
+	erra := http.ListenAndServe(":"+strconv.Itoa(Config.Port), RequestLogger(mux))
 	if erra != nil {
 		log.Fatalf("Error in ListenAndServe: %s", erra)
 	}
@@ -64,6 +71,14 @@ func RequestLogger(targetMux http.Handler) http.Handler {
 }
 
 func registrationStart(w http.ResponseWriter, r *http.Request) {
+	if Config.RegistrationAllowed == false {
+		http.Error(w, "Registration not allowed in config", http.StatusForbidden)
+		return
+	}
+	if Config.RegistrationToken != r.URL.Query().Get("token") {
+		http.Error(w, "Wrong token", http.StatusForbidden)
+		return
+	}
 	u := &User{
 		Name: r.URL.Query().Get("name"),
 	}
@@ -80,6 +95,10 @@ func registrationStart(w http.ResponseWriter, r *http.Request) {
 }
 
 func registrationFinish(w http.ResponseWriter, r *http.Request) {
+	if Config.RegistrationAllowed == false {
+		http.Error(w, "Registration not allowed in config", http.StatusForbidden)
+		return
+	}
 	u := &User{
 		Name: r.URL.Query().Get("name"),
 	}
@@ -141,7 +160,7 @@ func loginFinish(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
-func loggedIn(w http.ResponseWriter, r *http.Request) {
+func verify(w http.ResponseWriter, r *http.Request) {
 	sess, err := sessionsstore.Get(r, "session")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
