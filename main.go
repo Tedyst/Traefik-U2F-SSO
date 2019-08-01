@@ -27,12 +27,13 @@ var (
 )
 
 func main() {
-	// Initializing logger
-	zap, _ := zap.NewDevelopment()
-	defer zap.Sync()
-	logger = zap.Sugar()
-
 	initConfig()
+	zaplog, _ := zap.NewProduction()
+	if Config.Debug == true {
+		zaplog, _ = zap.NewDevelopment()
+	}
+	defer zaplog.Sync()
+	logger = zaplog.Sugar()
 
 	// Prepare database
 	var err error
