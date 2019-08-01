@@ -2,5 +2,5 @@ pkg/
 bin/
 src/
 textfiles.go
-database*
 __debug_bin
+storage/
