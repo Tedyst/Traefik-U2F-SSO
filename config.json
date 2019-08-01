@@ -2,6 +2,6 @@
     "Port": 8080,
     "RegistrationAllowed": false,
     "RegistrationToken": "secrettoken",
-    "URL": "auth.stoicatedy.ovh",
+    "URL": "https://auth.stoicatedy.ovh",
     "Debug": true
 }
