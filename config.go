@@ -11,6 +11,7 @@ type Configuration struct {
 	RegistrationToken   string
 	URL                 string
 	Debug               bool
+	Domain				string
 }
 
 func initConfig() error {

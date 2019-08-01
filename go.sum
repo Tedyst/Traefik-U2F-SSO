@@ -1,3 +1,5 @@
+github.com/Tedyst/sqlitestore v0.0.0-20190801085407-9d526ef60b1c h1:p03st9VT5whr76xJKtvl7B6hsZ+SF/dPyxygdmovsIg=
+github.com/Tedyst/sqlitestore v0.0.0-20190801085407-9d526ef60b1c/go.mod h1:BtG4lDIVy+rOfgotPGeJLnATLjd7X578QYuDTpHbQNQ=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=

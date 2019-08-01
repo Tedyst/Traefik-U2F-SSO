@@ -94,7 +94,7 @@ func registrationStart(w http.ResponseWriter, r *http.Request) {
 		Name: r.URL.Query().Get("name"),
 	}
 
-	sess, err := sessionsstore.Get(r, "session")
+	sess, err := sessionsstore.Get(r, "auth_session")
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -123,7 +123,7 @@ func registrationFinish(w http.ResponseWriter, r *http.Request) {
 		Name: r.URL.Query().Get("name"),
 	}
 
-	sess, err := sessionsstore.Get(r, "session")
+	sess, err := sessionsstore.Get(r, "auth_session")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		logger.Errorw("Error getting a session",
@@ -145,7 +145,7 @@ func loginStart(w http.ResponseWriter, r *http.Request) {
 		Name: r.URL.Query().Get("name"),
 	}
 
-	sess, err := sessionsstore.Get(r, "session")
+	sess, err := sessionsstore.Get(r, "auth_session")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		logger.Errorw("Error getting a session",
@@ -168,7 +168,7 @@ func loginFinish(w http.ResponseWriter, r *http.Request) {
 		Name: r.URL.Query().Get("name"),
 	}
 
-	sess, err := sessionsstore.Get(r, "session")
+	sess, err := sessionsstore.Get(r, "auth_session")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		logger.Errorw("Error getting a session",
@@ -217,7 +217,7 @@ func loginFinish(w http.ResponseWriter, r *http.Request) {
 }
 
 func verify(w http.ResponseWriter, r *http.Request) {
-	sess, err := sessionsstore.Get(r, "session")
+	sess, err := sessionsstore.Get(r, "auth_session")
 	if err != nil {
 		http.Redirect(w, r, Config.URL, http.StatusSeeOther)
 		logger.Debugw("Error getting the session",
@@ -230,13 +230,17 @@ func verify(w http.ResponseWriter, r *http.Request) {
 		logger.Debugw("User is logged in",
 			"Session", sess.ID,
 		)
-		newURL := r.URL.Query().Get("rd")
-		if newURL != "" {
-			http.Redirect(w, r, newURL, http.StatusSeeOther)
-			return
-		}
-		http.Redirect(w, r, Config.URL, http.StatusSeeOther)
-	} else {
-		http.Redirect(w, r, Config.URL, http.StatusSeeOther)
+		return
+
 	}
+	logger.Debugw("User is not logged in",
+		"Session", sess.ID,
+	)
+	newURL := r.URL.Query().Get("rd")
+	if newURL != "" {
+		http.Redirect(w, r, Config.URL+"?rd="+newURL, http.StatusSeeOther)
+		return
+	}
+	http.Redirect(w, r, Config.URL, http.StatusSeeOther)
+
 }

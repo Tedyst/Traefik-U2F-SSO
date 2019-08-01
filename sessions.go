@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/michaeljs1990/sqlitestore"
+	"github.com/Tedyst/sqlitestore"
 )
 
 var (

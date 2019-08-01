@@ -5,9 +5,9 @@ import (
 
 	"database/sql"
 
+	"github.com/Tedyst/sqlitestore"
 	"github.com/koesie10/webauthn/webauthn"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/michaeljs1990/sqlitestore"
 )
 
 var db *sql.DB
@@ -170,6 +170,9 @@ func initStorage() {
 	}
 
 	sessionsstore, _ = sqlitestore.NewSqliteStoreFromConnection(db, "sessions", "/", 360000, sessionskey)
+	sessionsstore.Options.Domain = Config.Domain
+	sessionsstore.Options.Secure = true
+	sessionsstore.Options.HttpOnly = false
 
 	db.Exec("PRAGMA journal_mode=WAL")
 
