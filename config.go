@@ -9,6 +9,7 @@ type Configuration struct {
 	Port                int
 	RegistrationAllowed bool
 	RegistrationToken   string
+	URL					string
 }
 
 func initConfig() error {

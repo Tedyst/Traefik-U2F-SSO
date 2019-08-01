@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	"database/sql"
 
@@ -37,7 +36,7 @@ var storage = &Storage{}
 func (s *Storage) AddAuthenticator(user webauthn.User, authenticator webauthn.Authenticator) error {
 	stmt, err := db.Prepare("INSERT INTO authenticators(User, ID, CredentialID, PublicKey, AAGUID, SignCount) VALUES (?, ?, ?, ?, ?, ?)")
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err)
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(user.WebAuthName(),
@@ -47,34 +46,45 @@ func (s *Storage) AddAuthenticator(user webauthn.User, authenticator webauthn.Au
 		authenticator.WebAuthAAGUID(),
 		authenticator.WebAuthSignCount())
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err)
 		// return fmt.Errorf("authenticator already exists")
 	}
-
+	logger.Debugw("Added authenticator in database",
+		"User", user.WebAuthName(),
+		"AuthID", authenticator.WebAuthID(),
+	)
 	return nil
 }
 
 // GetAuthenticator is needed for webauthn protocol
 func (s *Storage) GetAuthenticator(id []byte) (webauthn.Authenticator, error) {
 	var au Authenticator
-	stmt, err := db.Prepare("SELECT ID,CredentialID,PublicKey,AAGUID,SignCount FROM authenticators WHERE ID = ?")
+	var user string
+	stmt, err := db.Prepare("SELECT User,ID,CredentialID,PublicKey,AAGUID,SignCount FROM authenticators WHERE ID = ?")
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err)
 	}
 	rows, err := stmt.Query(id)
 	defer rows.Close()
 	defer stmt.Close()
 	for rows.Next() {
-		err = rows.Scan(&au.ID, &au.CredentialID, &au.PublicKey, &au.AAGUID, &au.SignCount)
+		err = rows.Scan(&user, &au.ID, &au.CredentialID, &au.PublicKey, &au.AAGUID, &au.SignCount)
 		if err != nil {
-			log.Fatal(err)
+			logger.Error(err)
 		}
+		logger.Debugw("Found authenticator in database",
+			"User", user,
+			"AuthID", id,
+		)
 		return &au, nil
 	}
 	err = rows.Err()
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err)
 	}
+	logger.Debugw("Did not find authenticator in database",
+		"AuthID", id,
+	)
 	return nil, fmt.Errorf("authenticator not found")
 }
 
@@ -83,11 +93,11 @@ func (s *Storage) GetAuthenticators(user webauthn.User) ([]webauthn.Authenticato
 	var authrs []webauthn.Authenticator
 	stmt, err := db.Prepare("SELECT ID, CredentialID, PublicKey, AAGUID, SignCount FROM authenticators WHERE User = ?")
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err)
 	}
 	rows, err := stmt.Query(user.WebAuthName())
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err)
 		return authrs, nil
 	}
 	defer rows.Close()
@@ -96,13 +106,17 @@ func (s *Storage) GetAuthenticators(user webauthn.User) ([]webauthn.Authenticato
 		var au Authenticator
 		err = rows.Scan(&au.ID, &au.CredentialID, &au.PublicKey, &au.AAGUID, &au.SignCount)
 		if err != nil {
-			log.Fatal(err)
+			logger.Error(err)
 		}
+		logger.Debugw("Found authenticator in database",
+			"User", user.WebAuthName(),
+			"AuthID", au.ID,
+		)
 		authrs = append(authrs, &au)
 	}
 	err = rows.Err()
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err)
 	}
 	return authrs, nil
 }
@@ -152,7 +166,7 @@ func initStorage() {
 	// Test storage
 	err = db.Ping()
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err)
 	}
 
 	sessionsstore, _ = sqlitestore.NewSqliteStoreFromConnection(db, "sessions", "/", 360000, sessionskey)
@@ -170,7 +184,7 @@ func initStorage() {
 	);`
 	_, err = db.Exec(sqlStmt)
 	if err != nil {
-		log.Printf("%q: %s\n", err, sqlStmt)
+		logger.Error(err)
 		return
 	}
 }

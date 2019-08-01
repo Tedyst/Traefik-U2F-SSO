@@ -13,6 +13,10 @@ require (
 	github.com/pkg/errors v0.8.0
 	github.com/stretchr/testify v1.3.0
 	github.com/tkanos/gonfig v0.0.0-20181112185242-896f3d81fadf
+	github.com/uber-go/zap v1.10.0
+	go.uber.org/atomic v1.4.0 // indirect
+	go.uber.org/multierr v1.1.0 // indirect
+	go.uber.org/zap v1.10.0
 	golang.org/x/crypto v0.0.0-20181024171144-74cb1d3d52f4
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/square/go-jose.v2 v2.1.9

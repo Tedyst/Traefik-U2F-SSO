@@ -10,11 +10,13 @@ import (
 	"time"
 
 	"github.com/koesie10/webauthn/webauthn"
+	"go.uber.org/zap"
 )
 
 //go:generate go run script/embedfiles.go
 
 var (
+	logger *zap.SugaredLogger
 	// Config is imported from config.yml
 	Config     Configuration
 	webauth, _ = webauthn.New(&webauthn.Config{
@@ -25,6 +27,11 @@ var (
 )
 
 func main() {
+	// Initializing logger
+	zap, _ := zap.NewDevelopment()
+	defer zap.Sync()
+	logger = zap.Sugar()
+
 	initConfig()
 
 	// Prepare database
@@ -35,7 +42,9 @@ func main() {
 	}
 	defer db.Close()
 	initStorage()
-	log.Print("Started on :" + strconv.Itoa(Config.Port))
+
+	logger.Info("Started on :", Config.Port)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", Index)
 	mux.HandleFunc("/webauthn/registration/start", registrationStart)
@@ -46,7 +55,8 @@ func main() {
 
 	erra := http.ListenAndServe(":"+strconv.Itoa(Config.Port), RequestLogger(mux))
 	if erra != nil {
-		log.Fatalf("Error in ListenAndServe: %s", erra)
+
+		logger.Fatalf("Error in ListenAndServe: %s", erra)
 	}
 }
 
@@ -60,12 +70,11 @@ func RequestLogger(targetMux http.Handler) http.Handler {
 		// log request by who(IP address)
 		requesterIP := r.RemoteAddr
 
-		log.Printf(
-			"%s\t\t%s\t\t%s\t\t%v",
-			r.Method,
-			r.RequestURI,
-			requesterIP,
-			time.Since(start),
+		logger.Infow("Loaded page",
+			"Method", r.Method,
+			"RequestURI", r.RequestURI,
+			"RequesterIP", requesterIP,
+			"Time", time.Since(start),
 		)
 	})
 }
@@ -73,10 +82,12 @@ func RequestLogger(targetMux http.Handler) http.Handler {
 func registrationStart(w http.ResponseWriter, r *http.Request) {
 	if Config.RegistrationAllowed == false {
 		http.Error(w, "Registration not allowed in config", http.StatusForbidden)
+		logger.Debug("Registration attempt denied since the registration is disabled in config")
 		return
 	}
 	if Config.RegistrationToken != r.URL.Query().Get("token") {
 		http.Error(w, "Wrong token", http.StatusForbidden)
+		logger.Debug("Registration attempt denied since the token is wrong")
 		return
 	}
 	u := &User{
@@ -87,9 +98,17 @@ func registrationStart(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logger.Errorw("Error getting a session",
+			"Session", sess.ID,
+			"User", u.Name,
+		)
 		return
 	}
 
+	logger.Debugw("Started registration",
+		"Session", sess.ID,
+		"User", u.Name,
+	)
 	webauth.StartRegistration(r, w, u, webauthn.WrapMap(sess.Values))
 	sess.Save(r, w)
 }
@@ -97,6 +116,7 @@ func registrationStart(w http.ResponseWriter, r *http.Request) {
 func registrationFinish(w http.ResponseWriter, r *http.Request) {
 	if Config.RegistrationAllowed == false {
 		http.Error(w, "Registration not allowed in config", http.StatusForbidden)
+		logger.Debug("Registration attempt denied since the registration is disabled in config")
 		return
 	}
 	u := &User{
@@ -106,9 +126,17 @@ func registrationFinish(w http.ResponseWriter, r *http.Request) {
 	sess, err := sessionsstore.Get(r, "session")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logger.Errorw("Error getting a session",
+			"Session", sess.ID,
+			"User", u.Name,
+		)
 		return
 	}
 
+	logger.Debugw("Finishing registration",
+		"Session", sess.ID,
+		"User", u.Name,
+	)
 	webauth.FinishRegistration(r, w, u, webauthn.WrapMap(sess.Values))
 }
 
@@ -120,9 +148,17 @@ func loginStart(w http.ResponseWriter, r *http.Request) {
 	sess, err := sessionsstore.Get(r, "session")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logger.Errorw("Error getting a session",
+			"Session", sess.ID,
+			"User", u.Name,
+		)
 		return
 	}
 
+	logger.Debugw("Started logging in",
+		"Session", sess.ID,
+		"User", u.Name,
+	)
 	webauth.StartLogin(r, w, u, webauthn.WrapMap(sess.Values))
 	sess.Save(r, w)
 }
@@ -135,21 +171,41 @@ func loginFinish(w http.ResponseWriter, r *http.Request) {
 	sess, err := sessionsstore.Get(r, "session")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logger.Errorw("Error getting a session",
+			"Session", sess.ID,
+			"User", u.Name,
+		)
 		return
 	}
 
+	logger.Debugw("Finishing logging in",
+		"Session", sess.ID,
+		"User", u.Name,
+	)
 	authenticator := webauth.FinishLogin(r, w, u, webauthn.WrapMap(sess.Values))
 	if authenticator == nil {
+		logger.Debugw("Did not finish logging in",
+			"Session", sess.ID,
+			"User", u.Name,
+		)
 		return
 	}
 
 	_, ok := authenticator.(*Authenticator)
 	if !ok {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logger.Debugw("Help",
+			"Session", sess.ID,
+			"User", u.Name,
+		)
 		return
 	}
 
-	log.Print(u.Name + " logged in!")
+	logger.Debugw("Logged in",
+		"Session", sess.ID,
+		"User", u.Name,
+	)
+
 	payload, _ := json.Marshal(u)
 	sess.Values["logged"] = true
 	err = sess.Save(r, w)
@@ -163,13 +219,13 @@ func loginFinish(w http.ResponseWriter, r *http.Request) {
 func verify(w http.ResponseWriter, r *http.Request) {
 	sess, err := sessionsstore.Get(r, "session")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Redirect(w, r, Config.URL, http.StatusSeeOther)
 		return
 	}
 
 	if sess.Values["logged"] == true {
 		fmt.Fprintf(w, "logged in.")
 	} else {
-		fmt.Fprint(w, "not logged in.")
+		http.Redirect(w, r, Config.URL, http.StatusSeeOther)
 	}
 }
