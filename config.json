@@ -3,6 +3,6 @@
     "RegistrationAllowed": true,
     "RegistrationToken": "secrettoken",
     "URL": "https://auth.stoicatedy.ovh",
-    "Debug": true,
+    "Debug": false,
     "Domain": "stoicatedy.ovh"
 }

@@ -12,12 +12,20 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	sess.Save(r, w)
 	// If the user is logged in, te page shown is static/loggedin.html
 	if sess.Values["logged"] == true {
+		logger.Debugw("User is not logged in",
+			"Session", sess.ID,
+		)
+		newURL := r.URL.Query().Get("rd")
+		if newURL != "" {
+			http.Redirect(w, r, newURL, http.StatusSeeOther)
+			return
+		}
 		fmt.Fprintf(w, loggedinHTML)
 		return
 	}
+	sess.Save(r, w)
 	// If the registration is allowed in config.json, te page shown is static/index.html, that allows registration using a token.
 	if Config.RegistrationAllowed == true {
 		fmt.Fprintf(w, indexHTML)

@@ -178,7 +178,7 @@
             const name = document.getElementById("loginName").value;
             w.login(name)
                 .then(res => res.json())
-                .then(res => alert('You have been logged in to ' + res.name))
+                .then(res => location.reload())
                 .catch(err => {
                     console.error(err)
                     alert('Wrong key or wrong username.');

@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/koesie10/webauthn/webauthn"
 	"go.uber.org/zap"
@@ -63,19 +62,19 @@ func main() {
 //RequestLogger logs every request
 func RequestLogger(targetMux http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
+		// start := time.Now()
 
-		targetMux.ServeHTTP(w, r)
+		// targetMux.ServeHTTP(w, r)
 
 		// log request by who(IP address)
-		requesterIP := r.RemoteAddr
+		// requesterIP := r.RemoteAddr
 
-		logger.Infow("Loaded page",
-			"Method", r.Method,
-			"RequestURI", r.RequestURI,
-			"RequesterIP", requesterIP,
-			"Time", time.Since(start),
-		)
+		// logger.Infow("Loaded page",
+		// 	"Method", r.Method,
+		// 	"RequestURI", r.RequestURI,
+		// 	"RequesterIP", requesterIP,
+		// 	"Time", time.Since(start),
+		// )
 	})
 }
 
