@@ -1,7 +1,7 @@
 version: "2"
 services:
   authenticator:
-    container_name: test
+    container_name: authenticator
     build: .
     restart: always
     volumes:
