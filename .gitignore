@@ -4,3 +4,4 @@ src/
 textfiles.go
 __debug_bin
 storage/
+!storage/.gitkeep
