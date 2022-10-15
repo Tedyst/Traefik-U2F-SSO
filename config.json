@@ -2,7 +2,8 @@
     "Port": 8080,
     "RegistrationAllowed": true,
     "RegistrationToken": "secrettoken",
-    "URL": "https://auth.stoicatedy.ovh",
+    "URL": "https://localhost:8080",
     "Debug": true,
-    "Domain": "stoicatedy.ovh"
+    "Domain": "localhost",
+    "SqliteFile": "storage/database"
 }
