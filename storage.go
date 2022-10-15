@@ -169,7 +169,10 @@ func initStorage() {
 		logger.Error(err)
 	}
 
-	sessionsstore, _ = sqlitestore.NewSqliteStoreFromConnection(db, "sessions", "/", 360000, sessionskey)
+	sessionsstore, err = sqlitestore.NewSqliteStoreFromConnection(db, "sessions", "/", 360000, sessionskey)
+	if err != nil {
+		logger.Fatalf("Could not init DB: %v", err)
+	}
 	sessionsstore.Options.Domain = Config.Domain
 	sessionsstore.Options.Secure = true
 	sessionsstore.Options.HttpOnly = false
