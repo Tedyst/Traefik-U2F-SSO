@@ -1,9 +1,8 @@
 package main
 
 import (
-	"fmt"
-
 	"database/sql"
+	"fmt"
 
 	"github.com/Tedyst/sqlitestore"
 	"github.com/koesie10/webauthn/webauthn"
@@ -161,23 +160,32 @@ func (a *Authenticator) WebAuthSignCount() uint32 {
 	return a.SignCount
 }
 
-func initStorage() {
-	var err error
+func initStorage(config Configuration) (err error) {
+	dsn := fmt.Sprintf("%v?journal_mode=WAL", config.SqliteFile)
+	logger.Debugf("open sqlite 3 at '%v'", dsn)
+	db, err = sql.Open("sqlite3", dsn)
+	if err != nil {
+		return
+	}
+
 	// Test storage
 	err = db.Ping()
 	if err != nil {
-		logger.Error(err)
+		return
 	}
 
 	sessionsstore, err = sqlitestore.NewSqliteStoreFromConnection(db, "sessions", "/", 360000, sessionskey)
 	if err != nil {
-		logger.Fatalf("Could not init DB: %v", err)
+		return fmt.Errorf("Could not init DB: %w", err)
 	}
-	sessionsstore.Options.Domain = Config.Domain
+	sessionsstore.Options.Domain = config.Domain
 	sessionsstore.Options.Secure = true
 	sessionsstore.Options.HttpOnly = false
 
-	db.Exec("PRAGMA journal_mode=WAL")
+	_, err = db.Exec("PRAGMA journal_mode=WAL")
+	if err != nil {
+		return err
+	}
 
 	sqlStmt := `CREATE TABLE IF NOT EXISTS users (id integer not null primary key, name text);
 	CREATE TABLE IF NOT EXISTS authenticators (
@@ -189,8 +197,5 @@ func initStorage() {
 		SignCount INTEGER
 	);`
 	_, err = db.Exec(sqlStmt)
-	if err != nil {
-		logger.Error(err)
-		return
-	}
+	return err
 }
