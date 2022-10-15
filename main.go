@@ -12,8 +12,6 @@ import (
 	"go.uber.org/zap"
 )
 
-//go:generate go run script/embedfiles.go
-
 var (
 	logger *zap.SugaredLogger
 	// Config is imported from config.yml
@@ -26,7 +24,9 @@ var (
 )
 
 func main() {
-	initConfig()
+	if err := initConfig(); err != nil {
+		log.Fatalf("could not init config. %w", err)
+	}
 	zaplog, _ := zap.NewProduction()
 	if Config.Debug == true {
 		zaplog, _ = zap.NewDevelopment()
