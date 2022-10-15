@@ -12,8 +12,6 @@ github.com/koesie10/webauthn v0.3.5-0.20190427130103-61460705ee9a h1:BDEdcYeD1RM
 github.com/koesie10/webauthn v0.3.5-0.20190427130103-61460705ee9a/go.mod h1:YCf/fQSaP4KR9rz11i5d0+Alppy/SDUb2MScZ5Gvj4s=
 github.com/mattn/go-sqlite3 v1.10.1-0.20190716071503-d6f416f91c46 h1:sNCCTR5oH15dN6iHyo5rOqzYYlSsEHRaCbBeYrpnRX4=
 github.com/mattn/go-sqlite3 v1.10.1-0.20190716071503-d6f416f91c46/go.mod h1:FPy6KqzDD04eiIsT53CuJW3U88zkxoIYsOqkbpncsNc=
-github.com/michaeljs1990/sqlitestore v0.0.0-20171009140204-37b8425f7b43 h1:k7zYU+otKmsJVi9IAsowkZ5SlkqxRq+rqdhprb492HA=
-github.com/michaeljs1990/sqlitestore v0.0.0-20171009140204-37b8425f7b43/go.mod h1:N6aiMetO+sSN0h4VC8RjkwiljKaZmgPsWzZG+mk6oec=
 github.com/pkg/errors v0.8.0 h1:WdK/asTD0HN+q6hsWO3/vpuAkAr+tw6aNJNDFFf0+qw=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
