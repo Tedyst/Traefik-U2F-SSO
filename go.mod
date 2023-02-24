@@ -17,6 +17,6 @@ require (
 	github.com/ugorji/go/codec v0.0.0-20180918125716-ed9a3b5f078b // indirect
 	go.uber.org/atomic v1.4.0 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
-	golang.org/x/crypto v0.0.0-20181024171144-74cb1d3d52f4 // indirect
+	golang.org/x/crypto v0.1.0 // indirect
 	gopkg.in/square/go-jose.v2 v2.1.9 // indirect
 )
